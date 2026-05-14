@@ -20,7 +20,7 @@ class TaobaoUISkill:
         self.description = "登录 → 搜索商品 → 筛选商品 → 加入购物车"
 
     @skill
-    async def run(self):
+    async def run(self, search_term: str, filters: int):
         result = {
             "status": "success",
             "message": "",
@@ -35,34 +35,34 @@ class TaobaoUISkill:
                 result["steps"].append("打开网站")
 
                 # 自动填充账号密码
-                # await page.locator("#header a[href='/login']").click()
-                # await page.fill("[data-qa='login-email']", "***********")
-                # await page.fill("[data-qa='login-password']", "*************")
-                # await page.click("[data-qa='login-button']")
-                # result["steps"].append("登录完成")
+                await page.locator("#header a[href='/login']").click()
+                await page.fill("[data-qa='login-email']", "2752668542@qq.com")
+                await page.fill("[data-qa='login-password']", "775852100@Pang")
+                await page.click("[data-qa='login-button']")
+                result["steps"].append("登录完成")
 
                 # 提示用户手动登录
-                await page.get_by_text("Login").click()
-                result["steps"].append("请手动登录。")
-                # await page.wait_for_timeout(1000)
-                # 检查登录是否成功
-                while True:
-                    if not await page.get_by_text("Logout").is_visible():
-                        await asyncio.sleep(2)  # 暂停2秒，避免过多请求
-                    else:
-                        break  # 检测到 Logout，退出循环
-
-                result["steps"].append("登录成功")
+                # await page.get_by_text("Login").click()
+                # result["steps"].append("请手动登录。")
+                # # await page.wait_for_timeout(1000)
+                # # 检查登录是否成功
+                # while True:
+                #     if not await page.get_by_text("Logout").is_visible():
+                #         await asyncio.sleep(2)  # 暂停2秒，避免过多请求
+                #     else:
+                #         break  # 检测到 Logout，退出循环
+                #
+                # result["steps"].append("登录成功")
 
                 # 点击商品页
                 await page.locator("#header a[href='/products']").click()
                 result["steps"].append("进入商品页")
 
-                # 点击搜索框，搜索Tshirt
-                await page.fill("#search_product", "Tshirt")
+                # 点击搜索框，搜索商品
+                await page.fill("#search_product", search_term)
                 await page.click("#submit_search")
                 await page.wait_for_timeout(2000)
-                result["steps"].append("搜索Tshirt完成")
+                result["steps"].append(f"搜索{search_term}完成")
 
                 # 获取每一个商品盒子
                 goods = page.locator(".single-products")
@@ -72,7 +72,7 @@ class TaobaoUISkill:
                 for i in range(count):
                     price_text = await goods.nth(i).locator(".productinfo.text-center h2").inner_text()
                     price = float(price_text.replace("Rs.", "").strip())
-                    if price < 1000:
+                    if price < filters:
                         await goods.nth(i).hover()
                         await goods.nth(i).locator("a.add-to-cart").first.click()
                         await page.wait_for_timeout(1000)
@@ -81,7 +81,7 @@ class TaobaoUISkill:
                         added = True
 
                 if added:
-                    result["message"] = "已成功将价格低于1000的商品加入购物车"
+                    result["message"] = f"已成功将价格低于{filters}的{search_term}加入购物车"
                 else:
                     result["status"] = "failed"
                     result["message"] = "未找到符合条件的商品"
