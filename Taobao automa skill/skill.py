@@ -36,8 +36,8 @@ class TaobaoUISkill:
 
                 # 自动填充账号密码
                 await page.locator("#header a[href='/login']").click()
-                await page.fill("[data-qa='login-email']", "2752668542@qq.com")
-                await page.fill("[data-qa='login-password']", "775852100@Pang")
+                await page.fill("[data-qa='login-email']", "******.com")
+                await page.fill("[data-qa='login-password']", "********")
                 await page.click("[data-qa='login-button']")
                 result["steps"].append("登录完成")
 
